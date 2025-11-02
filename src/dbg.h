@@ -139,6 +139,9 @@ static inline const char *dbg_level_str(int lvl) {
 // 用户接口宏
 // =========================================================
 
+// 功能: 打印 ERROR 等级日志 (红色),执行goto error
+#define log_err_goto(M, ...)  do{DBG_LOG(DBG_LEVEL_ERROR, CLR_RED, M, ##__VA_ARGS__);goto error;}while(0)
+
 // 功能: 打印 ERROR 等级日志 (红色)
 #define log_err(M, ...)  DBG_LOG(DBG_LEVEL_ERROR, CLR_RED, M, ##__VA_ARGS__)
 
