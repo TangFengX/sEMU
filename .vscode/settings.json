@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "stdint.h": "c",
+        "dbg.h": "c",
+        "compile.h": "c",
+        "stdio.h": "c",
+        "assembly.h": "c"
+    }
+}
