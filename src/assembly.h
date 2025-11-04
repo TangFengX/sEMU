@@ -1,90 +1,59 @@
+#ifndef __ASSEMBLY_H__
+#define __ASSEMBLY_H__
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include "main.h"
 #define MAX_BUFFER_SIZE 256
 #define HEX_CODE_SIZE 8
 #define HEX_PER_LINE 8
 #define ASSEMBLE_LINE_SIZE 64
 
-void compile_source_file(const char *file_assemble, const char *file_analyze, const char *file_hex);
+void process_assembly_file(const char *file_assembly, const char *file_analyze, const char *file_hex);
 
-void decompile_hex_file(const char *file_hex, const char *file_assemble, const char *file_analyze);
+void process_hex_file(const char *file_hex, const char *file_assembly, const char *file_analyze);
 
-void deassemble_analyze_file(const char *file_analyze, const char *file_assemble, const char *file_hex);
+void process_analyze_file(const char *file_analyze, const char *file_assembly, const char *file_hex);
 
 void analyze_file_to_hex_file(const char *file_analyze, const char *file_hex);
 
 void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze);
 
-void analyze_file_to_assemble_file(const char *file_analyze, const char *file_assemble);
+void analyze_file_to_assembly_file(const char *file_analyze, const char *file_assembly);
 
-void assemble_file_to_analyze_file(const char *file_assemble, const char *file_analyze);
+void assembly_file_to_analyze_file(const char *file_assembly, const char *file_analyze);
 
 void compile_assemble_code_line_to_hex_code(const char *assemble_line, char *hex_code);
 
 void decompile_hex_code_to_assemble_code_line(const char *hex_code, char *assemble_line);
 
-typedef struct
+typedef struct HexCodeList HexCodeList;
+
+struct HexCodeList
 {
     char hex_code[HEX_CODE_SIZE + 1];
-    uint32_t index;
+    int index;
     HexCodeList *next;
-} HexCodeList;
+} ;
 
-typedef struct
+typedef struct AnalyzeLineList AnalyzeLineList;
+struct AnalyzeLineList
 {
-    char assemble_line[ASSEMBLE_LINE_SIZE + 1];
-    uint32_t index;
-    AssembleLineList *next;
-} AssembleLineList;
-
-typedef struct
-{
-    char analyze_line[MAX_BUFFER_SIZE];
+    char analyze_line[ASSEMBLE_LINE_SIZE + 1];
+    int index;
     AnalyzeLineList *next;
-} AnalyzeLineList;
+} ;
 
-static char *return_pointer_next_to_Nth_tab(char *line_ptr, int n)
+typedef struct AssembleLineList AssembleLineList;
+struct AssembleLineList
 {
-    char *current_ptr = line_ptr;
-    for (int i = 0; i < n; i++)
-    {
-        current_ptr = strchr(current_ptr, '\t');
-        if (current_ptr == NULL)
-        {
-            return NULL;
-        }
-        current_ptr = current_ptr + 1;
-    }
-    return current_ptr;
-}
-
-static char *return_pointer_next_to_the_next_space(char *line_ptr)
-{
-    char *p = line_ptr;
-
-    
-    while (*p == ' ' || *p == '\t')
-        p++;
-
-    
-    while (*p != '\0' && *p != ' ' && *p != '\t')
-        p++;
-
-    while (*p == ' ' || *p == '\t')
-        p++;
-
-    
-    if (*p == '\0')
-        return NULL;
-
-    
-    return p;
-}
-
+    char assemble_line[MAX_BUFFER_SIZE];
+    int index;
+    AssembleLineList *next;
+} ;
 
 typedef struct
 {
@@ -127,6 +96,48 @@ static const Reg reg_table[] = {
     {"t6", 31},
 };
 
+static char *return_pointer_next_to_Nth_tab(char *line_ptr, int n)
+{
+    char *current_ptr = line_ptr;
+    for (int i = 0; i < n; i++)
+    {
+        current_ptr = strchr(current_ptr, '\t');
+        debug("Tab %d found at position: %ld", i + 1, current_ptr ? (long)(current_ptr - line_ptr) : -1);
+        if (current_ptr == NULL)
+        {
+            return NULL;
+        }
+        current_ptr = current_ptr + 1;
+    }
+    return current_ptr;
+}
+
+static char *return_pointer_next_to_the_next_space(char *line_ptr)
+{
+    char *p = line_ptr;
+
+    
+    while (*p == ' ' || *p == '\t')
+        p++;
+
+    
+    while (*p != '\0' && *p != ' ' && *p != '\t')
+        p++;
+
+    while (*p == ' ' || *p == '\t')
+        p++;
+
+    
+    if (*p == '\0')
+        return NULL;
+
+    
+    return p;
+}
+
+
+
+
 static int reg_from_name(const char *name)
 {
     int i;
@@ -154,7 +165,7 @@ static const char *reg_to_name(int id)
             return reg_table[i].name;
         }
     static char buf[5] = "err";
-    log_err_goto("Unknown register id: %d", id);
+    log_err("Unknown register id: %d", id);
     return buf;
 }
 
@@ -188,3 +199,6 @@ static int parse_imm(const char *s)
     // 十进制
     return atoi(s);
 }
+
+
+#endif

@@ -4,6 +4,7 @@
         "dbg.h": "c",
         "compile.h": "c",
         "stdio.h": "c",
-        "assembly.h": "c"
+        "assembly.h": "c",
+        "string.h": "c"
     }
 }

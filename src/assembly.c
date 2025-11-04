@@ -4,21 +4,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-void compile_source_file(const char *file_assemble, const char *file_analyze, const char *file_hex)
+void process_assembly_file(const char *file_assembly, const char *file_analyze, const char *file_hex)
 {
-    assemble_file_to_analyze_file(file_assemble, file_analyze);
+    assembly_file_to_analyze_file(file_assembly, file_analyze);
     analyze_file_to_hex_file(file_analyze, file_hex);
 }
 
-void decompile_hex_file(const char *file_hex, const char *file_assemble, const char *file_analyze)
+void process_hex_file(const char *file_hex, const char *file_assembly, const char *file_analyze)
 {
     hex_file_to_analyze_file(file_hex, file_analyze);
-    analyze_file_to_assemble_file(file_analyze, file_assemble);
+    analyze_file_to_assembly_file(file_analyze, file_assembly);
 }
 
-void deassemble_analyze_file(const char *file_analyze, const char *file_assemble, const char *file_hex)
+void process_analyze_file(const char *file_analyze, const char *file_assembly, const char *file_hex)
 {
-    analyze_file_to_assemble_file(file_analyze, file_assemble);
+    analyze_file_to_assembly_file(file_analyze, file_assembly);
     analyze_file_to_hex_file(file_analyze, file_hex);
 }
 
@@ -32,9 +32,12 @@ void analyze_file_to_hex_file(const char *file_analyze, const char *file_hex)
     HexCodeList *hex_list_head = NULL, *hex_list_tail = NULL;
 
     hex_list_head = (HexCodeList *)malloc(sizeof(HexCodeList));
+    check_mem(hex_list_head);
+    hex_list_head->next = NULL;
+
     hex_list_tail = hex_list_head;
 
-    check_mem(hex_list_head);
+    
     check_mem(analyze_fp);
 
     log_info("Reading analyze file: %s", file_base_name(file_analyze));
@@ -45,7 +48,6 @@ void analyze_file_to_hex_file(const char *file_analyze, const char *file_hex)
     while (fgets(line, sizeof(line), analyze_fp) != NULL)
     {
         file_line_index++;
-        size_t len = strlen(line);
 
         line[strcspn(line, "\r\n")] = '\0';
 
@@ -76,6 +78,7 @@ void analyze_file_to_hex_file(const char *file_analyze, const char *file_hex)
             {
                 new_hex_node = (HexCodeList *)malloc(sizeof(HexCodeList));
                 check_mem(new_hex_node);
+                
                 strncpy(new_hex_node->hex_code, begin_of_hex, HEX_CODE_SIZE);
 
                 new_hex_node->index = line_count;
@@ -141,7 +144,7 @@ error:
     return;
 }
 
-void analyze_file_to_assemble_file(const char *file_analyze, const char *file_assemble)
+void analyze_file_to_assembly_file(const char *file_analyze, const char *file_assembly)
 {
     FILE *analyze_fp = fopen(file_analyze, "r");
 
@@ -151,9 +154,11 @@ void analyze_file_to_assemble_file(const char *file_analyze, const char *file_as
     AssembleLineList *assemble_list_head = NULL, *assemble_list_tail = NULL;
 
     assemble_list_head = (AssembleLineList *)malloc(sizeof(AssembleLineList));
+    check_mem(assemble_list_head);
+    assemble_list_head->next = NULL;
     assemble_list_tail = assemble_list_head;
 
-    check_mem(assemble_list_head);
+    
     check_mem(analyze_fp);
 
     log_info("Reading analyze file: %s", file_base_name(file_analyze));
@@ -164,7 +169,7 @@ void analyze_file_to_assemble_file(const char *file_analyze, const char *file_as
     while (fgets(line, sizeof(line), analyze_fp) != NULL)
     {
         file_line_index++;
-        size_t len = strlen(line);
+        
 
         line[strcspn(line, "\r\n")] = '\0';
 
@@ -192,13 +197,18 @@ void analyze_file_to_assemble_file(const char *file_analyze, const char *file_as
                 new_assemble_node = (AssembleLineList *)malloc(sizeof(AssembleLineList));
                 check_mem(new_assemble_node);
 
-                begin_of_assemble[strcspn(line, " #")] = '\0';
+                begin_of_assemble[strcspn(begin_of_assemble, " #")] = '\0';
+                begin_of_assemble[strcspn(begin_of_assemble, "\t")] = ' ';
                 strncpy(new_assemble_node->assemble_line, begin_of_assemble, ASSEMBLE_LINE_SIZE);
-
                 new_assemble_node->index = line_count;
                 new_assemble_node->assemble_line[ASSEMBLE_LINE_SIZE] = '\0';
 
                 debug("Assemble Line %d: %s", line_count, new_assemble_node->assemble_line);
+                char* space_pos = strchr(new_assemble_node->assemble_line, ' ');
+                if (space_pos != NULL) {
+                    *space_pos = '\t';
+                }
+                
 
                 line_count++;
                 new_assemble_node->next = NULL;
@@ -210,18 +220,19 @@ void analyze_file_to_assemble_file(const char *file_analyze, const char *file_as
     }
     fclose(analyze_fp);
     log_info("Analyze file %s read successfully.", file_base_name(file_analyze));
-    FILE *assemble_fp = fopen(file_assemble, "w");
+    FILE *assemble_fp = fopen(file_assembly, "w");
     check_mem(assemble_fp);
-    log_info("Writing assemble file: %s", file_base_name(file_assemble));
+    log_info("Writing assemble file: %s", file_base_name(file_assembly));
     AssembleLineList *current_assemble_node = assemble_list_head->next;
 
     while (current_assemble_node != NULL)
     {
         fprintf(assemble_fp, "%s\n", current_assemble_node->assemble_line);
+        //debug("Writing assemble line %d: %s", current_assemble_node->index, current_assemble_node->assemble_line);
         current_assemble_node = current_assemble_node->next;
     }
     fclose(assemble_fp);
-    log_info("Assemble file %s written successfully.", file_base_name(file_assemble));
+    log_info("Assemble file %s written successfully.", file_base_name(file_assembly));
 error:
     while (assemble_list_head != NULL)
     {
@@ -353,7 +364,7 @@ void decompile_hex_code_to_assemble_code_line(const char *hex_code, char *assemb
     unsigned funct3 = (inst >> 12) & 0x7;
     unsigned rs1 = (inst >> 15) & 0x1F;
     unsigned rs2 = (inst >> 20) & 0x1F;
-    unsigned funct7 = (inst >> 25) & 0x7F;
+    //unsigned funct7 = (inst >> 25) & 0x7F;
     int imm = 0;
 
     switch (opcode)
@@ -426,8 +437,9 @@ void decompile_hex_code_to_assemble_code_line(const char *hex_code, char *assemb
         sprintf(assemble_line, "unknown");
         log_err_goto("Unknown opcode: %d", opcode);
         break;
-    error:
     }
+    error:
+    return;
 }
 
 void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze)
@@ -438,8 +450,10 @@ void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze)
     char assemble_line[ASSEMBLE_LINE_SIZE + 1];
     AnalyzeLineList *analyze_list_head = NULL, *analyze_list_tail = NULL;
     analyze_list_head = (AnalyzeLineList *)malloc(sizeof(AnalyzeLineList));
-    analyze_list_tail = analyze_list_head;
     check_mem(analyze_list_head);
+    analyze_list_head->next = NULL;
+    analyze_list_tail = analyze_list_head;
+    
     check_mem(hex_fp);
     log_info("Reading hex file: %s", file_base_name(file_hex));
     int line_count = 0;      // 提取的编码行号从0开始
@@ -447,15 +461,11 @@ void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze)
     while (fgets(line, sizeof(line), hex_fp) != NULL)
     {
         file_line_index++;
-        size_t len = strlen(line);
+        
         line[strcspn(line, "\r\n")] = '\0';
         debug("Line %d : %s", file_line_index, line);
         char *begin_of_hex = NULL;
-        if (!(line[0] >= '0' && line[0] <= '9' || line[0] >= 'a' && line[0] <= 'f') == 0)
-        {
-            log_info("Skipping header line %d:%s ", file_line_index, line);
-            continue;
-        }
+        
         char *hex_begin = return_pointer_next_to_the_next_space(line);
         while (1)
         {
@@ -467,17 +477,22 @@ void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze)
             {
                 strncpy(hex_line, hex_begin, HEX_CODE_SIZE);
                 hex_line[HEX_CODE_SIZE] = '\0';
+                debug("Hex Code extracted: %s", hex_line);
                 decompile_hex_code_to_assemble_code_line(hex_line, assemble_line);
                 if (strcmp(assemble_line, "unknown") == 0)
                 {
-                    log_err_goto("Failed to decompile hex code %s at line %d", hex_line, file_line_index);
+                    log_err("Failed to decompile hex code %s at line %d", hex_line, file_line_index);
+                    break;
                 }
                 AnalyzeLineList *new_analyze_node = (AnalyzeLineList *)malloc(sizeof(AnalyzeLineList));
                 check_mem(new_analyze_node);
-                snprintf(new_analyze_node->analyze_line, MAX_BUFFER_SIZE, "%8x:\t%8x          \t%s\n", line_count, hex_line, assemble_line);
+                
+                
+                snprintf(new_analyze_node->analyze_line, MAX_BUFFER_SIZE, "%8x:\t%s          \t%s", line_count, hex_line, assemble_line);
                 line_count += 4;
                 analyze_list_tail->next = new_analyze_node;
                 analyze_list_tail = new_analyze_node;
+                hex_begin = return_pointer_next_to_the_next_space(hex_begin);
             }
         }
     }
@@ -503,24 +518,27 @@ error:
     }
 }
 
-void assemble_file_to_analyze_file(const char *file_assemble, const char *file_analyze)
+void assembly_file_to_analyze_file(const char *file_assembly, const char *file_analyze)
 {
-    FILE *assemble_fp = fopen(file_assemble, "r");
+    FILE *assemble_fp = fopen(file_assembly, "r");
     char line[ASSEMBLE_LINE_SIZE + 1];
     char hex_code[HEX_CODE_SIZE + 1];
     char assemble_line[ASSEMBLE_LINE_SIZE + 1];
     AnalyzeLineList *analyze_list_head = NULL, *analyze_list_tail = NULL;
     analyze_list_head = (AnalyzeLineList *)malloc(sizeof(AnalyzeLineList));
-    analyze_list_tail = analyze_list_head;
     check_mem(analyze_list_head);
+    analyze_list_head->next = NULL;
+
+    analyze_list_tail = analyze_list_head;
+
     check_mem(assemble_fp);
-    log_info("Reading assemble file: %s", file_base_name(file_assemble));
+    log_info("Reading assemble file: %s", file_base_name(file_assembly));
     int line_count = 0;      // 提取的编码行号从0开始
     int file_line_index = 0; // 文件行号从1开始
     while (fgets(line, sizeof(line), assemble_fp) != NULL)
     {
         file_line_index++;
-        size_t len = strlen(line);
+        
         line[strcspn(line, "\r\n")] = '\0';
         debug("Line %d : %s", file_line_index, line);
         compile_assemble_code_line_to_hex_code(line, hex_code);
@@ -530,14 +548,18 @@ void assemble_file_to_analyze_file(const char *file_assemble, const char *file_a
         }
         AnalyzeLineList *new_analyze_node = (AnalyzeLineList *)malloc(sizeof(AnalyzeLineList));
         check_mem(new_analyze_node);
-        snprintf(new_analyze_node->analyze_line, MAX_BUFFER_SIZE, "%8x:\t%8s          \t%s\n", line_count, hex_code, line);
+        char* space_pos = strchr(line, ' ');
+        if (space_pos != NULL) {
+            *space_pos = '\t';
+        }
+        snprintf(new_analyze_node->analyze_line, MAX_BUFFER_SIZE, "%8x:\t%8s          \t%s", line_count, hex_code, line);
         line_count += 4;
         new_analyze_node->next = NULL;
         analyze_list_tail->next = new_analyze_node;
         analyze_list_tail = new_analyze_node;
     }
     fclose(assemble_fp);
-    log_info("Assemble file %s read successfully.", file_base_name(file_assemble));
+    log_info("Assemble file %s read successfully.", file_base_name(file_assembly));
     FILE *analyze_fp = fopen(file_analyze, "w");
     check_mem(analyze_fp);
     log_info("Writing analyze file: %s", file_base_name(file_analyze));
@@ -550,4 +572,10 @@ void assemble_file_to_analyze_file(const char *file_assemble, const char *file_a
     fclose(analyze_fp);
     log_info("Analyze file %s written successfully.", file_base_name(file_analyze));
 error:
+    while (analyze_list_head != NULL)
+    {
+        AnalyzeLineList *temp = analyze_list_head;
+        analyze_list_head = analyze_list_head->next;
+        free(temp);
+    }
 }
