@@ -112,7 +112,7 @@ static char *return_pointer_next_to_Nth_tab(char *line_ptr, int n)
     return current_ptr;
 }
 
-static char *return_pointer_next_to_the_next_space(char *line_ptr)
+char *return_pointer_next_to_the_next_space(char *line_ptr)
 {
     char *p = line_ptr;
 

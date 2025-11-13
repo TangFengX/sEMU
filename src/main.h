@@ -11,7 +11,7 @@ extern const char *dbg_log_format;
 
 #include "dbg.h"
 
-#define TARGET_CYCLES_DEFAULT 10
+#define TARGET_CYCLES_DEFAULT 7000
 #define IMG_FILE_NAME_DEFAULT "img"
 #define _str(x) #x
 
@@ -40,10 +40,9 @@ typedef struct{
     char *output_file_hex;
     char *img_file_name;
     char *output_file_mem_img;
-    char *output_file_gpr_img;
     char *log_file;
     char *report_file;
-    uint32_t target_cycles;
+    int target_cycles;
     int verbose;
     int log;
     int report;

@@ -5,6 +5,8 @@
         "compile.h": "c",
         "stdio.h": "c",
         "assembly.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "emu.h": "c",
+        "main.h": "c"
     }
 }

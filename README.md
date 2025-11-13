@@ -22,7 +22,7 @@
   <tbody>
     <tr style="text-align: center;">
       <td style="border: 1px solid #ccc; padding: 8px;"><code>lui</code></td>
-      <td style="border: 1px solid #ccc; padding: 8px;" colspan="4">imm[31:12] (20)<br>(constant)</td>
+      <td style="border: 1px solid #ccc; padding: 8px;" colspan="4">imm[19:0] (20)<br>(constant)</td>
       <td style="border: 1px solid #ccc; padding: 8px;">rd (5)</td>
       <td style="border: 1px solid #ccc; padding: 8px;">0110111</td>
       <td style="border: 1px solid #ccc; padding: 8px;"><strong>lui rd, imm</strong></td>

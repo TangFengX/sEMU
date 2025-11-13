@@ -464,7 +464,7 @@ void hex_file_to_analyze_file(const char *file_hex, const char *file_analyze)
         
         line[strcspn(line, "\r\n")] = '\0';
         debug("Line %d : %s", file_line_index, line);
-        char *begin_of_hex = NULL;
+        //char *begin_of_hex = NULL;
         
         char *hex_begin = return_pointer_next_to_the_next_space(line);
         while (1)

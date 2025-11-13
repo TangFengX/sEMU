@@ -28,7 +28,6 @@ int main(int argc, char *argv[])
         .output_file_hex = NULL,
         .img_file_name = IMG_FILE_NAME_DEFAULT,
         .output_file_mem_img = NULL,
-        .output_file_gpr_img = NULL,
         .log_file = NULL,
         .report_file = NULL,
         .target_cycles = TARGET_CYCLES_DEFAULT,
