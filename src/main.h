@@ -39,7 +39,9 @@ typedef struct{
     char *output_file_analyze;
     char *output_file_hex;
     char *img_file_name;
-    char *output_file_mem_img;
+    char *output_file_ram_img;
+    char *output_file_rom_img;
+    char *output_file_gpr_img;
     char *log_file;
     char *report_file;
     int target_cycles;
@@ -49,8 +51,9 @@ typedef struct{
 }ProgramArgs;
 
 void get_file_names(const char* input_file,char* base_name_buffer,size_t buffer_size);
+
 void create_file_if_not_exists(const char* file_name);
 
-
+void ProgramArgs_cleanup(ProgramArgs *args);
 
 #endif // !__MAIN_H__

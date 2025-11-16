@@ -27,7 +27,9 @@ int main(int argc, char *argv[])
         .output_file_analyze = NULL,
         .output_file_hex = NULL,
         .img_file_name = IMG_FILE_NAME_DEFAULT,
-        .output_file_mem_img = NULL,
+        .output_file_ram_img=NULL,
+        .output_file_rom_img=NULL,
+        .output_file_gpr_img=NULL,
         .log_file = NULL,
         .report_file = NULL,
         .target_cycles = TARGET_CYCLES_DEFAULT,
@@ -134,12 +136,18 @@ int main(int argc, char *argv[])
     }
 
     const char* dbg_log_format = "%F:%l %M\n";
-    args.output_file_assemble = (char *)malloc(strlen(args.file_name) + 5);
-    args.output_file_analyze = (char *)malloc(strlen(args.file_name) + 5);
-    args.output_file_hex = (char *)malloc(strlen(args.file_name) + 5);
+    args.output_file_assemble = (char *)malloc(strlen(args.file_name) +10);
+    args.output_file_analyze = (char *)malloc(strlen(args.file_name) +10);
+    args.output_file_hex = (char *)malloc(strlen(args.file_name) +10);
+    args.output_file_ram_img=(char*)malloc(strlen(args.file_name)+10);
+    args.output_file_rom_img=(char*)malloc(strlen(args.file_name)+10);
+    args.output_file_gpr_img=(char*)malloc(strlen(args.file_name)+10);
     check_mem(args.output_file_assemble);
     check_mem(args.output_file_analyze);
     check_mem(args.output_file_hex);
+    check_mem(args.output_file_ram_img);
+    check_mem(args.output_file_rom_img);
+    check_mem(args.output_file_gpr_img);
     sprintf(args.output_file_assemble, "%s.asmtxt", args.file_name);
     sprintf(args.output_file_analyze, "%s.txt", args.file_name);
     sprintf(args.output_file_hex, "%s.hextxt", args.file_name);
@@ -164,6 +172,7 @@ int main(int argc, char *argv[])
     case MODE_RUN:
         run_simulator(&args);
         break;
+        debug("s");
     case MODE_ERROR:
     default:
         log_err("No valid mode specified. Please use -a, -l, -x, or -r to specify the mode.");
@@ -171,7 +180,7 @@ int main(int argc, char *argv[])
     }
 
 error:
-
+    ProgramArgs_cleanup(&args);
     return 0;
 }
 
@@ -200,4 +209,67 @@ void create_file_if_not_exists(const char* file_name){
         return;
     }
     fclose(fp);
+}
+
+
+void ProgramArgs_cleanup(ProgramArgs *args) {
+    
+    if (args == NULL) {
+        return;
+    }
+
+    if (args->file_name != NULL) {
+        free(args->file_name);
+        args->file_name = NULL;
+    }
+
+    
+    if (args->output_file_assemble != NULL) {
+        free(args->output_file_assemble);
+        args->output_file_assemble = NULL;
+    }
+    //
+    
+    if (args->output_file_analyze != NULL) {
+        free(args->output_file_analyze);
+        args->output_file_analyze = NULL;
+    }
+    
+
+    
+    if (args->output_file_hex != NULL) {
+        free(args->output_file_hex);
+        args->output_file_hex = NULL;
+    }
+    
+    
+    
+    if (args->output_file_ram_img != NULL) {
+        free(args->output_file_ram_img);
+        args->output_file_ram_img = NULL;
+    }
+    
+    
+    if (args->output_file_rom_img != NULL) {
+        free(args->output_file_rom_img);
+        args->output_file_rom_img = NULL;
+    }
+    
+    if (args->output_file_gpr_img != NULL) {
+        free(args->output_file_gpr_img);
+        args->output_file_gpr_img = NULL;
+    }
+    
+    
+    if (args->log_file != NULL) {
+        free(args->log_file);
+        args->log_file = NULL;
+    }
+
+    
+    if (args->report_file != NULL) {
+        free(args->report_file);
+        args->report_file = NULL;
+    }
+    
 }

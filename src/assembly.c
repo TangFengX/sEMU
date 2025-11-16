@@ -579,3 +579,27 @@ error:
         free(temp);
     }
 }
+
+char *return_pointer_next_to_the_next_space(char *line_ptr)
+{
+    char *p = line_ptr;
+
+    
+    while (*p == ' ' || *p == '\t')
+        p++;
+
+    
+    while (*p != '\0' && *p != ' ' && *p != '\t')
+        p++;
+
+    while (*p == ' ' || *p == '\t')
+        p++;
+
+    
+    if (*p == '\0')
+        return NULL;
+
+    
+    return p;
+}
+

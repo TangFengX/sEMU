@@ -112,28 +112,7 @@ static char *return_pointer_next_to_Nth_tab(char *line_ptr, int n)
     return current_ptr;
 }
 
-char *return_pointer_next_to_the_next_space(char *line_ptr)
-{
-    char *p = line_ptr;
-
-    
-    while (*p == ' ' || *p == '\t')
-        p++;
-
-    
-    while (*p != '\0' && *p != ' ' && *p != '\t')
-        p++;
-
-    while (*p == ' ' || *p == '\t')
-        p++;
-
-    
-    if (*p == '\0')
-        return NULL;
-
-    
-    return p;
-}
+char *return_pointer_next_to_the_next_space(char *line_ptr);
 
 
 
@@ -147,7 +126,7 @@ static int reg_from_name(const char *name)
     if (name[0] == 'x')
     {
         int name_id = atoi(name + 1);
-        debug("Register name %s parsed as x%d", name, name_id);
+        //debug("Register name %s parsed as x%d", name, name_id);
         return name_id;
     }
     log_err_goto("Unknown register name: %s", name);
@@ -161,7 +140,7 @@ static const char *reg_to_name(int id)
     for (i = 0; i < (int)(sizeof(reg_table) / sizeof(reg_table[0])); ++i)
         if (reg_table[i].id == id)
         {
-            debug("Register id %d converted to name %s", id, reg_table[i].name);
+            //debug("Register id %d converted to name %s", id, reg_table[i].name);
             return reg_table[i].name;
         }
     static char buf[5] = "err";
